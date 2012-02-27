@@ -14,6 +14,16 @@ class RhinosSpec extends Specification {
       result must beNone
     }
 
+    "convert a Javascript String return value to a JsString" in {
+      val result = rhino(_.eval("""var s = "some string!"; s;"""))
+      
+      result must beSome[JsValue]
+      
+      val jsString = result.get.asInstanceOf[JsString]
+  
+      jsString.value must beEqualTo("some string!")
+    }
+
     "convert a Javascript Array return value to a JsArray" in {
       val result = rhino(_.eval("""var a = [1,2,3]; a;"""))
       
