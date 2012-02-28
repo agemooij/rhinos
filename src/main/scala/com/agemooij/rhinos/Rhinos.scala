@@ -9,8 +9,6 @@ import org.mozilla.javascript._
 import cc.spray.json._
 
 
-
-
 object Rhinos {
 
   def rhino(block: RhinoContext => Option[JsValue]): Option[JsValue] = {
@@ -44,8 +42,12 @@ class RhinoContext() {
   }
   
   def loadFromClasspath(path: String) {
-    using(new BufferedReader(new InputStreamReader(this.getClass.getClassLoader.getResourceAsStream(path)))) { reader =>
-      context.evaluateReader(scope, reader, "RhinoContext.loadFromClasspath()", 1, null)
+    val in = this.getClass.getClassLoader.getResourceAsStream(path)
+    
+    if (in != null) {
+      using(new BufferedReader(new InputStreamReader(in))) { reader =>
+        context.evaluateReader(scope, reader, "RhinoContext.loadFromClasspath()", 1, null)
+      }
     }
   }
   

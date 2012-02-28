@@ -8,8 +8,14 @@ class RhinosSpec extends Specification {
 
   "RhinosContext.eval()" should {
     
-    "return None when the script produces undefined output" in {
+    "return None when the script is empty" in {
       val result = rhino(_.eval(""""""))
+      
+      result must beNone
+    }
+    
+    "return None when the script does not return a result" in {
+      val result = rhino(_.eval("""var x = 42;"""))
       
       result must beNone
     }
@@ -106,6 +112,18 @@ class RhinosSpec extends Specification {
   }
   
   "RhinosContext.loadFromClasspath()" should {
+    "not throw an exception when the path doesn't exist" in {
+      val result = rhino { context =>
+        context.loadFromClasspath("non-existing-path.js")
+         
+        // return None because the block should return an Option[JsValue]
+        // but loadFromClasspath does not return a value
+        None
+      }
+      
+      result must beNone
+    }
+    
     "load functions from a file and make them available to eval()" in {
       val result = rhino { context =>
         context.loadFromClasspath("scripts/test-functions.js")
