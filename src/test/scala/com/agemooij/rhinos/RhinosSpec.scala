@@ -6,7 +6,7 @@ import org.specs2.mutable._
 class RhinosSpec extends Specification {
   import Rhinos._
 
-  "RhinosContext.eval() " should {
+  "RhinosContext.eval()" should {
     
     "return None when the script produces undefined output" in {
       val result = rhino(_.eval(""""""))
@@ -103,5 +103,20 @@ class RhinosSpec extends Specification {
       jsObject.fields("i") must beEqualTo(JsNumber(2))
     }
 
+  }
+  
+  "RhinosContext.loadFromClasspath()" should {
+    "load functions into the context and make them available to eval()" in {
+      val result = rhino { context =>
+        context.loadFromClasspath("scripts/test-functions.js")
+        context.eval("""var r = add2(add(10, 30)); r;""")
+      }
+      
+      result must beSome[JsValue]
+      
+      val js = result.get.asInstanceOf[JsNumber]
+  
+      js.value must beEqualTo(42)
+    }
   }
 }

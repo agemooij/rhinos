@@ -3,6 +3,8 @@ package com.agemooij.rhinos
 import scala.collection.immutable.ListMap
 import scala.collection.JavaConversions._
 
+import java.io.{BufferedReader, InputStreamReader}
+
 import org.mozilla.javascript._
 import cc.spray.json._
 
@@ -32,17 +34,32 @@ class RhinoContext() {
   val context = Context.enter()
   val scope = context.initStandardObjects()
   
-  def close {
-    Context.exit()
-  }
-  
   def eval(javascriptCode: String): Option[JsValue] = {
-    val result = context.evaluateString(scope, javascriptCode, "<js>", 1, null)
+    val result = context.evaluateString(scope, javascriptCode, "RhinoContext.eval()", 1, null)
     
     result match {
       case u: Undefined => None
       case value @ _ => Some(toJsValue(value))
     }
+  }
+  
+  def loadFromClasspath(path: String) {
+    using(new BufferedReader(new InputStreamReader(this.getClass.getClassLoader.getResourceAsStream(path)))) { reader =>
+      context.evaluateReader(scope, reader, "RhinoContext.loadFromClasspath()", 1, null)
+    }
+  }
+  
+  def close {
+    Context.exit()
+  }
+  
+  
+  private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
+     try {
+       f(resource)
+     } finally {
+       resource.close()
+     }
   }
   
   
