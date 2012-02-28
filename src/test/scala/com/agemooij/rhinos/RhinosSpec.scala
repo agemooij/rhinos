@@ -106,7 +106,7 @@ class RhinosSpec extends Specification {
   }
   
   "RhinosContext.loadFromClasspath()" should {
-    "load functions into the context and make them available to eval()" in {
+    "load functions from a file and make them available to eval()" in {
       val result = rhino { context =>
         context.loadFromClasspath("scripts/test-functions.js")
         context.eval("""var r = add2(add(10, 30)); r;""")
@@ -117,6 +117,26 @@ class RhinosSpec extends Specification {
       val js = result.get.asInstanceOf[JsNumber]
   
       js.value must beEqualTo(42)
+    }
+    
+    "load standard JS libs from a file and make them available to eval()" in {
+      val result = rhino { context =>
+        context.loadFromClasspath("scripts/underscore.js")
+        context.eval("""
+          var mapped = _.map([1, 2, 3], function(num){ return num * 3; });
+          
+          mapped;
+        """)
+      }
+      
+      result must beSome[JsValue]
+      
+      val jsArray = result.get.asInstanceOf[JsArray]
+  
+      jsArray.elements must have size(3)
+      jsArray.elements(0) === JsNumber(3)
+      jsArray.elements(1) === JsNumber(6)
+      jsArray.elements(2) === JsNumber(9)
     }
   }
 }
