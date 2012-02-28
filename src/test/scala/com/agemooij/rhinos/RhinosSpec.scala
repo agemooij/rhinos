@@ -20,14 +20,39 @@ class RhinosSpec extends Specification {
       result must beNone
     }
 
+    "convert a Javascript null return value to a JsBoolean" in {
+      val result = rhino(_.eval("""var b = null; b;"""))
+      
+      result must beSome[JsValue]
+      result.get must beEqualTo(JsNull)
+    }
+
+    "convert a Javascript true return value to a JsBoolean" in {
+      val result = rhino(_.eval("""var b = true; b;"""))
+      
+      result must beSome[JsValue]
+      result.get.asInstanceOf[JsBoolean].value must beTrue
+    }
+    
+    "convert a Javascript false return value to a JsBoolean" in {
+      val result = rhino(_.eval("""var b = false; b;"""))
+      
+      result must beSome[JsValue]
+      result.get.asInstanceOf[JsBoolean].value must beFalse
+    }
+
+    "convert a Javascript number return value to a JsBoolean" in {
+      val result = rhino(_.eval("""var n = 3.1415; n;"""))
+      
+      result must beSome[JsValue]
+      result.get.asInstanceOf[JsNumber].value must beEqualTo(3.1415)
+    }
+
     "convert a Javascript String return value to a JsString" in {
       val result = rhino(_.eval("""var s = "some string!"; s;"""))
       
       result must beSome[JsValue]
-      
-      val jsString = result.get.asInstanceOf[JsString]
-  
-      jsString.value must beEqualTo("some string!")
+      result.get.asInstanceOf[JsString].value must beEqualTo("some string!")
     }
 
     "convert a Javascript Array return value to a JsArray" in {
@@ -44,14 +69,15 @@ class RhinosSpec extends Specification {
     }
     
     "convert a Javascript Object return value to a JsObject" in {
-      val result = rhino(_.eval("""var o = {"name": "value"}; o;"""))
+      val result = rhino(_.eval("""var o = {"name1": "value", "name2": true}; o;"""))
       
       result must beSome[JsValue]
       
       val jsObject = result.get.asInstanceOf[JsObject]
   
-      jsObject.fields must have size(1)
-      jsObject.fields("name") must beEqualTo(JsString("value"))
+      jsObject.fields must have size(2)
+      jsObject.fields("name1").asInstanceOf[JsString].value must beEqualTo("value")
+      jsObject.fields("name2").asInstanceOf[JsBoolean].value must beTrue
     }
     
     
@@ -137,7 +163,7 @@ class RhinosSpec extends Specification {
       js.value must beEqualTo(42)
     }
     
-    "load standard JS libs from a file and make them available to eval()" in {
+    "load 3rd party JS lib from a file and make it available to eval()" in {
       val result = rhino { context =>
         context.loadFromClasspath("scripts/underscore.js")
         context.eval("""
