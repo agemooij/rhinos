@@ -56,6 +56,10 @@ class RhinoContext() {
   }
   
   
+  // ==========================================================================
+  // Implementation Details
+  // ==========================================================================
+  
   private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
      try {
        f(resource)
@@ -64,12 +68,7 @@ class RhinoContext() {
      }
   }
   
-  
-  // ==========================================================================
-  // Conversions
-  // ==========================================================================
-  
-  private[rhinos] def toJsValue(input: Any): JsValue = input match {
+  private def toJsValue(input: Any): JsValue = input match {
     case b:Boolean => JsBoolean(b)
     case i:Int => JsNumber(i)
     case l:Long => JsNumber(l)
@@ -84,13 +83,13 @@ class RhinoContext() {
     case other @ _ => JsString("unknown: " + other.toString)
   }
 
-  private[rhinos] def toJsObject(nativeObject: NativeObject): JsObject = {
+  private def toJsObject(nativeObject: NativeObject): JsObject = {
     val tuples = nativeObject.entrySet.toList.map(entry => (entry.getKey.toString, toJsValue(entry.getValue)))
 
     new JsObject(ListMap(tuples: _*))
   }
 
-  private[rhinos] def toJsArray(nativeArray: NativeArray): JsArray = {
+  private def toJsArray(nativeArray: NativeArray): JsArray = {
     new JsArray(nativeArray.iterator().map(item => toJsValue(item)).toList)
   }
 }
