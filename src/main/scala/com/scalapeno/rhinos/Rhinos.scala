@@ -1,4 +1,4 @@
-package com.agemooij.rhinos
+package com.scalapeno.rhinos
 
 import scala.collection.immutable.ListMap
 import scala.collection.JavaConversions._

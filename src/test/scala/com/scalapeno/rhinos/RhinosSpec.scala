@@ -1,4 +1,4 @@
-package com.agemooij.rhinos
+package com.scalapeno.rhinos
 
 import cc.spray.json._
 import cc.spray.json.DefaultJsonProtocol._
