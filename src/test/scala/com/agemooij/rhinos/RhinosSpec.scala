@@ -20,42 +20,42 @@ class RhinosSpec extends Specification {
       result must beNone
     }
 
-    "convert a Javascript null return value to a JsBoolean" in {
+    "return Some(JsNull) when the script returns a Javascript null" in {
       val result = rhino(_.eval("""var b = null; b;"""))
       
       result must beSome[JsValue]
       result.get must beEqualTo(JsNull)
     }
 
-    "convert a Javascript true return value to a JsBoolean" in {
+    "return Some(JsBoolean(true)) when the script returns a Javascript true" in {
       val result = rhino(_.eval("""var b = true; b;"""))
       
       result must beSome[JsValue]
-      result.get.asInstanceOf[JsBoolean].value must beTrue
+      result.get must beEqualTo(JsBoolean(true))
     }
     
-    "convert a Javascript false return value to a JsBoolean" in {
+    "return Some(JsBoolean(false)) when the script returns a Javascript false" in {
       val result = rhino(_.eval("""var b = false; b;"""))
       
       result must beSome[JsValue]
-      result.get.asInstanceOf[JsBoolean].value must beFalse
+      result.get must beEqualTo(JsBoolean(false))
     }
 
-    "convert a Javascript number return value to a JsBoolean" in {
+    "return Some(JsNumber) when the script returns a Javascript number" in {
       val result = rhino(_.eval("""var n = 3.1415; n;"""))
       
       result must beSome[JsValue]
-      result.get.asInstanceOf[JsNumber].value must beEqualTo(3.1415)
+      result.get must beEqualTo(JsNumber(3.1415))
     }
 
-    "convert a Javascript String return value to a JsString" in {
+    "return Some(JsString) when the script returns a Javascript string" in {
       val result = rhino(_.eval("""var s = "some string!"; s;"""))
       
       result must beSome[JsValue]
-      result.get.asInstanceOf[JsString].value must beEqualTo("some string!")
+      result.get must beEqualTo(JsString("some string!"))
     }
 
-    "convert a Javascript Array return value to a JsArray" in {
+    "return Some(JsArray) when the script returns a Javascript array" in {
       val result = rhino(_.eval("""var a = [1,2,3]; a;"""))
       
       result must beSome[JsValue]
@@ -68,7 +68,7 @@ class RhinosSpec extends Specification {
       jsArray.elements(2) === JsNumber(3)
     }
     
-    "convert a Javascript Object return value to a JsObject" in {
+    "return Some(JsObject) when the script returns a Javascript object" in {
       val result = rhino(_.eval("""var o = {"name1": "value", "name2": true}; o;"""))
       
       result must beSome[JsValue]
@@ -81,7 +81,7 @@ class RhinosSpec extends Specification {
     }
     
     
-    "convert a Javascript nested Object tree with calculated values to a JsObject" in {
+    "return Some(JsObject) when the script returns a Javascript object with nested objects" in {
       val result = rhino { context =>
         context.eval("""
             var func = function(a, b) {return a + b;};
