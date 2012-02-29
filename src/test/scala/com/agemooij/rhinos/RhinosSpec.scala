@@ -1,7 +1,10 @@
 package com.agemooij.rhinos
 
 import cc.spray.json._
+import cc.spray.json.DefaultJsonProtocol._
+
 import org.specs2.mutable._
+
 
 class RhinosSpec extends Specification {
   import Rhinos._
@@ -59,27 +62,19 @@ class RhinosSpec extends Specification {
       val result = rhino(_.eval("""var a = [1,2,3]; a;"""))
       
       result must beSome[JsValue]
-      
-      val jsArray = result.get.asInstanceOf[JsArray]
-  
-      jsArray.elements must have size(3)
-      jsArray.elements(0) === JsNumber(1)
-      jsArray.elements(1) === JsNumber(2)
-      jsArray.elements(2) === JsNumber(3)
+      result.get must beEqualTo(JsArray(JsNumber(1), JsNumber(2), JsNumber(3)))
+      result.get.convertTo[List[Int]] must beEqualTo(List(1,2,3))
     }
     
     "return Some(JsObject) when the script returns a Javascript object" in {
       val result = rhino(_.eval("""var o = {"name1": "value", "name2": true}; o;"""))
       
       result must beSome[JsValue]
-      
-      val jsObject = result.get.asInstanceOf[JsObject]
-  
-      jsObject.fields must have size(2)
-      jsObject.fields("name1").asInstanceOf[JsString].value must beEqualTo("value")
-      jsObject.fields("name2").asInstanceOf[JsBoolean].value must beTrue
+      result.get must beEqualTo(
+        JsObject("name1" -> JsString("value"), 
+                 "name2" -> JsBoolean(true))
+      )
     }
-    
     
     "return Some(JsObject) when the script returns a Javascript object with nested objects" in {
       val result = rhino { context =>
@@ -100,7 +95,7 @@ class RhinosSpec extends Specification {
                   "h2a": ["4", "5", "6"]
                 }
               },
-              "i": func(1, 1)
+              "i": func(15, 27)
             };
 
             bla
@@ -109,32 +104,19 @@ class RhinosSpec extends Specification {
       }
       
       result must beSome[JsValue]
-      
-      val jsObject = result.get.asInstanceOf[JsObject]
-  
-      jsObject.fields must have size(9)
-      jsObject.fields("a") must beEqualTo(JsString("string"))
-      jsObject.fields("b") must beEqualTo(JsNumber(1))
-      jsObject.fields("c") must beEqualTo(JsNumber(3.1415))
-      jsObject.fields("d") must beEqualTo(JsBoolean(false))
-      jsObject.fields("e") must beEqualTo(JsBoolean(true))
-      jsObject.fields("f") must beEqualTo(JsNull)
-      
-      jsObject.fields("g") must beEqualTo(JsArray(JsNumber(1), JsNumber(2), JsNumber(3)))
-      
-      val h = jsObject.fields("h").asInstanceOf[JsObject]
-      
-      h.fields must have size(2)
-      h.fields("h1") must beEqualTo(JsNumber(1))
-      
-      val h2 = h.fields("h2").asInstanceOf[JsObject]
-      
-      h2.fields must have size(1)
-      h2.fields("h2a") must beEqualTo(JsArray(JsString("4"), JsString("5"), JsString("6")))
-      
-      jsObject.fields("i") must beEqualTo(JsNumber(2))
+      result.get must beEqualTo(
+        JsObject("a" -> JsString("string"),
+                 "b" -> JsNumber(1), 
+                 "c" -> JsNumber(3.1415),
+                 "d" -> JsBoolean(false), 
+                 "e" -> JsBoolean(true),
+                 "f" -> JsNull,
+                 "g" -> JsArray(JsNumber(1), JsNumber(2), JsNumber(3)),
+                 "h" -> JsObject("h1" -> JsNumber(1),
+                                 "h2" -> JsObject("h2a" -> JsArray(JsString("4"), JsString("5"), JsString("6")))),
+                 "i" -> JsNumber(42))
+      )
     }
-
   }
   
   "RhinosContext.loadFromClasspath()" should {
@@ -157,30 +139,22 @@ class RhinosSpec extends Specification {
       }
       
       result must beSome[JsValue]
-      
-      val js = result.get.asInstanceOf[JsNumber]
-  
-      js.value must beEqualTo(42)
+      result.get must beEqualTo(JsNumber(42))
     }
     
     "load 3rd party JS lib from a file and make it available to eval()" in {
       val result = rhino { context =>
         context.loadFromClasspath("scripts/underscore.js")
         context.eval("""
-          var mapped = _.map([1, 2, 3], function(num){ return num * 3; });
+          var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
           
           mapped;
         """)
       }
       
       result must beSome[JsValue]
-      
-      val jsArray = result.get.asInstanceOf[JsArray]
-  
-      jsArray.elements must have size(3)
-      jsArray.elements(0) === JsNumber(3)
-      jsArray.elements(1) === JsNumber(6)
-      jsArray.elements(2) === JsNumber(9)
+      result.get must beEqualTo(JsArray(JsNumber(3), JsNumber(6), JsNumber(9)))
+      result.get.convertTo[List[Int]] must beEqualTo(List(3, 6, 9))
     }
   }
 }
