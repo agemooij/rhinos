@@ -14,6 +14,16 @@ The be able to run JS code and act on its output from Scala.
 The use case that started this project was a __programmable fake REST server__ to support functional testing of mobile (iOS, Android) apps. It needed to run on the JVM because the _real_ REST server used heavy encryption written in Java but the behavior of the server (the _scenarios_ to run when responding to REST calls) needed to be programmed in Javascript because that was the one language all our testers knew.
 
 
+### Roadmap
+For version 0.1, the following features are under construction:
+
+- Change return type of `context.loadFromClasspath(path: String)` to `None` so all context methods return a value
+- Add `context.runFromClasspath(path: String): Option[JsValue]`
+- Add `context.runFromFile(path: String): Option[JsValue]`
+- Add `context.loadFromFile(path: String): None`
+- Better Javascript error handling
+
+
 ### How Does it Work?
 To give you an idea of how it works, here's a snippet from one of the unit tests:
 
