@@ -34,34 +34,29 @@ class RhinoContext[T : JsonReader] {
   
   def eval(javascriptCode: String): Option[T] = {
     val result = context.evaluateString(scope, javascriptCode, "RhinoContext.eval()", 1, null)
-    val convertor = jsonReader[T]
     
-    toJsValueOption(result).flatMap { jsValue =>
-      catching(classOf[DeserializationException]) opt {
-        jsValue.convertTo[T]
-      }
-    }
+    toScala(result)
   }
   
-  def loadFromClasspath(path: String): Option[T] = {
-    val in = this.getClass.getClassLoader.getResourceAsStream(path)
-    
-    if (in != null) {
-      load(new BufferedReader(new InputStreamReader(in)))
-    } else {
-      // TODO: log a warning
-      
-      None
-    }
-  }
-  
-  def loadFromFile(path: String): Option[T] = loadFromFile(new File(path))
-  def loadFromFile(file: File): Option[T] = {
+  def evalFile(path: String): Option[T] = evalFile(new File(path))
+  def evalFile(file: File): Option[T] = {
     if (file != null && file.exists) {
-      load(new FileReader(file))
+      eval(new FileReader(file))
     } else {
       // TODO: log a warning
 
+      None
+    }
+  }
+
+  def evalFileOnClasspath(path: String): Option[T] = {
+    val in = this.getClass.getClassLoader.getResourceAsStream(path)
+    
+    if (in != null) {
+      eval(new BufferedReader(new InputStreamReader(in)))
+    } else {
+      // TODO: log a warning
+      
       None
     }
   }
@@ -75,12 +70,12 @@ class RhinoContext[T : JsonReader] {
   // Implementation Details
   // ==========================================================================
 
-  private def load(reader: Reader): Option[T] = {
-    using(reader) { r =>
+  private def eval(reader: Reader): Option[T] = {
+    val result = using(reader) { r =>
       context.evaluateReader(scope, r, "RhinoContext.loadFromClasspath()", 1, null)
     }
     
-    None
+    toScala(result)
   }
   
   private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
@@ -89,6 +84,14 @@ class RhinoContext[T : JsonReader] {
      } finally {
        resource.close()
      }
+  }
+  
+  private def toScala(input: Any): Option[T] = {
+    toJsValueOption(input).flatMap { jsValue =>
+      catching(classOf[DeserializationException]) opt {
+        jsValue.convertTo[T]
+      }
+    }
   }
   
   private def toJsValueOption(input: Any): Option[JsValue] = toJsValue(input) match {

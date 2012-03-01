@@ -29,10 +29,8 @@ Rhinos is built using SBT 0.11.x and depends on:
 
 
 ### Roadmap
-For version 0.1, the following features are under construction:
+For version 0.1, the following features are still under construction:
 
-- Add `context.runFromClasspath(path: String): Option[T]`
-- Add `context.runFromFile(path: String): Option[T]`
 - Better Javascript error handling
 
 Rough ideas for later:
@@ -69,12 +67,24 @@ To give you an idea of how it works, here's a snippet from one of the unit tests
 }
 ```
 
-You can also load or run existing libraries and then use them. The below snippet shows how this works.
+You can also load or run existing libraries and then use them in subsequent calls. The below snippet shows how this works.
 
 ```scala
-"load 3rd party JS lib from a file and make it available to eval()" in {
+"eval the file and return the converted return value" in {
+  val result = rhino[Int] { context =>
+    context.evalFileOnClasspath("scripts/script-with-return-value.js")
+  }
+  
+  result must beSome[Int]
+  result.get must beEqualTo(42)
+}
+
+"eval 3rd party JS lib from a file and make it available to later calls to eval()" in {
+  val url = this.getClass.getClassLoader.getResource("scripts/underscore.js")
+  val file = new File(url.toURI)
+  
   val result = rhino[List[Int]] { context =>
-    context.loadFromClasspath("scripts/underscore.js")
+    context.evalFile(file)
     context.eval("""
       var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
       
