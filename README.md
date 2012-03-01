@@ -58,7 +58,7 @@ To give you an idea of how it works, here's a snippet from one of the unit tests
 }
 ```
 
-You can also load or run existing libraries and then use them:
+You can also load or run existing libraries and then use them. The below snippet shows that in action and it also shows how easy it is to convert the AST to native Scala objects.
 
 ```scala
     "load 3rd party JS lib from a file and make it available to eval()" in {
@@ -76,3 +76,6 @@ You can also load or run existing libraries and then use them:
         result.get.convertTo[List[Int]] must beEqualTo(List(3, 6, 9))
     }
 ```
+
+More examples will follow.
+
