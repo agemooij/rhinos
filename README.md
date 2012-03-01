@@ -1,14 +1,17 @@
-Rhinos (or RhinoS) is a simple Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects, using the [Spray JSON](https://github.com/spray/spray-json) AST as the intermediate. Spray JSON then allows you to easily convert that AST to normal Scala objects and/or instances of your own (case) classes.
+Rhinos (or RhinoS) is a simple Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects, using the [Spray JSON](https://github.com/spray/spray-json) AST as an intermediate format. Spray JSON then allows you to easily convert that AST to normal Scala objects and/or instances of your own (case) classes.
 
 
 ### Status
+__WARNING:__ Work in progress!
 This project is a few days old and still actively under construction. It has not been used in production.... yet.
+
+All comments, suggestions, feature requests, pull requests, etc. and very welcome.
 
 
 ### Purpose
 The be able to run JS code and act on its output from Scala. 
 
-The use case that started this project was a _programmable fake REST server_ to support functional testing of mobile (iOS, Android) apps. It needed to run on the JVM because the _real_ REST server used heavy encryption written in Java but the behavior of the server (the _scenarios_ to run when responding to REST calls) needed to be programmed in Javascript because that was the one language all our testers knew.
+The use case that started this project was a __programmable fake REST server__ to support functional testing of mobile (iOS, Android) apps. It needed to run on the JVM because the _real_ REST server used heavy encryption written in Java but the behavior of the server (the _scenarios_ to run when responding to REST calls) needed to be programmed in Javascript because that was the one language all our testers knew.
 
 
 ### How Does it Work?
@@ -77,5 +80,5 @@ You can also load or run existing libraries and then use them. The below snippet
     }
 ```
 
-More examples will follow.
+For more examples, look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosSpec.scala)
 
