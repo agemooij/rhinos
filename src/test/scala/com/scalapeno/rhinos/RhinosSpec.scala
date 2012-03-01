@@ -34,42 +34,42 @@ class RhinosSpec extends Specification {
       result must beNone
     }
 
-    "return Some(true) when T =:= Boolean and the script returns a Javascript true" in {
+    "return Some(true) when T = Boolean and the script returns a Javascript true" in {
       val result = rhino[Boolean](_.eval("""var b = true; b;"""))
       
       result must beSome[Boolean]
       result.get must beTrue
     }
     
-    "return Some(false) when T =:= Boolean and the script returns a Javascript false" in {
+    "return Some(false) when T = Boolean and the script returns a Javascript false" in {
       val result = rhino[Boolean](_.eval("""var b = false; b;"""))
       
       result must beSome[Boolean]
       result.get must beFalse
     }
 
-    "return Some[Int] when T =:= Int and the script returns a Javascript number" in {
+    "return Some[Int] when T = Int and the script returns a Javascript number" in {
       val result = rhino[Int](_.eval("""var n = 3; n;"""))
     
       result must beSome[Int]
       result.get must beEqualTo(3)
     }
     
-    "return Some[Long] when T =:= Long and the script returns a Javascript number" in {
+    "return Some[Long] when T = Long and the script returns a Javascript number" in {
       val result = rhino[Long](_.eval("""var n = 3141521424; n;"""))
     
       result must beSome[Long]
       result.get must beEqualTo(3141521424L)
     }
 
-    "return Some[Float] when T =:= Float and the script returns a Javascript number" in {
+    "return Some[Float] when T = Float and the script returns a Javascript number" in {
       val result = rhino[Float](_.eval("""var n = 3.1415; n;"""))
     
       result must beSome[Float]
       result.get must beEqualTo(3.1415f)
     }
     
-    "return Some[Double] when T =:= Double and the script returns a Javascript number" in {
+    "return Some[Double] when T = Double and the script returns a Javascript number" in {
       val result = rhino[Double](_.eval("""var n = 1313133.141586193338; n;"""))
     
       result must beSome[Double]
@@ -78,68 +78,68 @@ class RhinosSpec extends Specification {
     
     // TODO: add tests for the Javascript 52bit number boundary cases
     
-    "return Some[Int] when T =:= Int and the script returns a Javascript number (auto-converted from Double to Int)" in {
+    "return Some[Int] when T = Int and the script returns a Javascript number (auto-converted from Double to Int)" in {
       val result = rhino[Int](_.eval("""var n = 3.1415; n;"""))
     
       result must beSome[Int]
       result.get must beEqualTo(3)
     }
     
-    "return Some[Byte] when T =:= Byte and the script returns a Javascript number" in {
+    "return Some[Byte] when T = Byte and the script returns a Javascript number" in {
       val result = rhino[Char](_.eval("""var c = 'c'; c;"""))
     
       result must beSome[Char]
       result.get must beEqualTo('c')
     }
     
-    "return Some[Char] when T =:= Char and the script returns a Javascript character" in {
+    "return Some[Char] when T = Char and the script returns a Javascript character" in {
       val result = rhino[Char](_.eval("""var c = 'c'; c;"""))
     
       result must beSome[Char]
       result.get must beEqualTo('c')
     }
 
-    "return Some[String] when T =:= String and the script returns a Javascript string" in {
+    "return Some[String] when T = String and the script returns a Javascript string" in {
       val result = rhino[String](_.eval("""var s = "some string!"; s;"""))
       
       result must beSome[String]
       result.get must beEqualTo("some string!")
     }
 
-    "return Some(Some[String]) when T =:= Option[String] and the script returns a Javascript string" in {
+    "return Some(Some[String]) when T = Option[String] and the script returns a Javascript string" in {
       val result = rhino[Option[String]](_.eval("""var a = "An optional String"; a;"""))
       
       result must beSome[Option[String]]
       result.get must beEqualTo(Some("An optional String"))
     }
     
-    "return None when T =:= Option[String] and the script returns a Javascript null" in {
+    "return None when T = Option[String] and the script returns a Javascript null" in {
       val result = rhino[Option[String]](_.eval("""var a = null; a;"""))
       
       result must beNone
     }
 
-    "return Some[List[Int]] whenT =:= List[Int] and the script returns a Javascript array of numbers" in {
+    "return Some[List[Int]] when T = List[Int] and the script returns a Javascript array of numbers" in {
       val result = rhino[List[Int]](_.eval("""var a = [1,2,3]; a;"""))
       
       result must beSome[List[Int]]
       result.get must beEqualTo(List(1,2,3))
     }
     
-    "return None when T =:= List[String] and the script returns a Javascript array of numbers" in {
+    "return None when T = List[String] and the script returns a Javascript array of numbers" in {
       val result = rhino[List[String]](_.eval("""var a = [1,2,3]; a;"""))
       
       result must beNone
     }
     
-    "return Some[Map[String, Int]] when T =:= Map[String, Int] and the script returns a compatible Javascript object" in {
+    "return Some[Map[String, Int]] when T = Map[String, Int] and the script returns a compatible Javascript object" in {
       val result = rhino[Map[String, Int]](_.eval("""var o = {"name1": 40, "name2": 2}; o;"""))
       
       result must beSome[Map[String, Int]]
       result.get must beEqualTo(Map("name1" -> 40, "name2" -> 2))
     }
     
-    "return Some(CustomObject) when T =:= CustomObject and the script returns a Javascript object" in {
+    "return Some(CustomObject) when T = CustomObject and the script returns a Javascript object" in {
       case class CustomObject(name1: String, name2:Boolean)
       implicit val customObjectFormat = jsonFormat2(CustomObject)
       
@@ -149,7 +149,7 @@ class RhinosSpec extends Specification {
       result.get must beEqualTo(CustomObject("value", true))
     }
     
-    "return Some(CompoundObject) when T =:= CompoundObject and the script returns a Javascript object with nested objects" in {
+    "return Some(CompoundObject) when T = CompoundObject and the script returns a Javascript object with nested objects" in {
       case class CompoundObject(a: String, b:Int, c:Double, d:Boolean, e:Boolean, f:Option[String], g:List[Int], h:NestedObject)
       case class NestedObject(h1:Long, h2:DoublyNestedObject)
       case class DoublyNestedObject(h2a:List[String])
