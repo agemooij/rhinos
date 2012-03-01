@@ -2,14 +2,14 @@ Rhinos (or RhinoS) is a simple Scala wrapper around Mozilla's Rhino Javascript r
 
 
 ### Status
-__WARNING:__ Work in progress!
+__WARNING:__ Work in progress!    
 This project is a few days old and still actively under construction. It has not been used in production.... yet.
 
 All comments, suggestions, feature requests, pull requests, etc. and very welcome.
 
 
 ### Purpose
-The be able to run JS code and act on its output from Scala. 
+Run Javascript code and act on its output from Scala.
 
 The use case that started this project was a __programmable fake REST server__ to support functional testing of mobile (iOS, Android) apps. It needed to run on the JVM because the _real_ REST server used heavy encryption written in Java but the behavior of the server (the _scenarios_ to run when responding to REST calls) needed to be programmed in Javascript because that was the one language all our testers knew.
 
@@ -22,6 +22,10 @@ For version 0.1, the following features are under construction:
 - Add `context.runFromFile(path: String): Option[JsValue]`
 - Add `context.loadFromFile(path: String): None`
 - Better Javascript error handling
+
+Rough ideas for later:
+
+- add support for injecting values into the Rhino context
 
 
 ### How Does it Work?
