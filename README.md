@@ -1,4 +1,6 @@
-Rhinos (or RhinoS) is a tiny Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects, using the [Spray JSON](https://github.com/spray/spray-json) AST as an intermediate format. Spray JSON then allows you to easily convert that AST to normal Scala objects and/or instances of your own (case) classes.
+Rhinos (or RhinoS) is a tiny Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects 
+
+Internally it uses [Spray Json](https://github.com/spray/spray-json) and its excellent support for mapping Json structures to Scala classes.
 
 
 ### Status
@@ -18,8 +20,8 @@ The use case that started this project was a __programmable fake REST server__ t
 For version 0.1, the following features are under construction:
 
 - Change return type of `context.loadFromClasspath(path: String)` to `None` so all context methods return a value
-- Add `context.runFromClasspath(path: String): Option[JsValue]`
-- Add `context.runFromFile(path: String): Option[JsValue]`
+- Add `context.runFromClasspath(path: String): Option[T]`
+- Add `context.runFromFile(path: String): Option[T]`
 - Add `context.loadFromFile(path: String): None`
 - Better Javascript error handling
 
@@ -32,67 +34,48 @@ Rough ideas for later:
 To give you an idea of how it works, here's a snippet from one of the unit tests:
 
 ```scala
-"return Some(JsObject) when the script returns a Javascript object with nested objects" in {
-  val result = rhino { context =>
-    context.eval("""
-        var func = function(a, b) {return a + b;};
+"return Some[Int] when T =:= Int and the script returns a Javascript number" in {
+  val result = rhino[Int](_.eval("""var n = 3; n;"""))
 
-        var bla = {
-          "a": "string",
-          "b": 1,
-          "c": 3.1415,
-          "d": false,
-          "e": true,
-          "f": null,
-          "g": [1, 2, 3],
-          "h": {
-            "h1": 1,
-            "h2": {
-              "h2a": ["4", "5", "6"]
-            }
-          },
-          "i": func(15, 27)
-        };
+  result must beSome[Int]
+  result.get must beEqualTo(3)
+}
 
-        bla
-      """
-    )
-  }
+"return Some[String] when T =:= String and the script returns a Javascript string" in {
+  val result = rhino[String](_.eval("""var s = "some string!"; s;"""))
+  
+  result must beSome[String]
+  result.get must beEqualTo("some string!")
+}
 
-  result must beSome[JsValue]
-  result.get must beEqualTo(
-    JsObject("a" -> JsString("string"),
-             "b" -> JsNumber(1), 
-             "c" -> JsNumber(3.1415),
-             "d" -> JsBoolean(false), 
-             "e" -> JsBoolean(true),
-             "f" -> JsNull,
-             "g" -> JsArray(JsNumber(1), JsNumber(2), JsNumber(3)),
-             "h" -> JsObject("h1" -> JsNumber(1),
-                             "h2" -> JsObject("h2a" -> JsArray(JsString("4"), JsString("5"), JsString("6")))),
-             "i" -> JsNumber(42))
-  )
+"return Some(CustomObject) when T =:= CustomObject and the script returns a Javascript object" in {
+  case class CustomObject(name1: String, name2:Boolean)
+  implicit val customObjectFormat = jsonFormat2(CustomObject)
+  
+  val result = rhino[CustomObject](_.eval("""var o = {"name1": "value", "name2": true}; o;"""))
+  
+  result must beSome[CustomObject]
+  result.get must beEqualTo(CustomObject("value", true))
 }
 ```
 
-You can also load or run existing libraries and then use them. The below snippet shows that in action and it also shows how easy it is to convert the AST to native Scala objects.
+You can also load or run existing libraries and then use them. The below snippet shows how this works.
 
 ```scala
-    "load 3rd party JS lib from a file and make it available to eval()" in {
-        val result = rhino { context =>
-          context.loadFromClasspath("scripts/underscore.js")
-          context.eval("""
-            var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
-        
-            mapped;
-          """)
-        }
-    
-        result must beSome[JsValue]
-        result.get must beEqualTo(JsArray(JsNumber(3), JsNumber(6), JsNumber(9)))
-        result.get.convertTo[List[Int]] must beEqualTo(List(3, 6, 9))
-    }
+"load 3rd party JS lib from a file and make it available to eval()" in {
+  val result = rhino[List[Int]] { context =>
+    context.loadFromClasspath("scripts/underscore.js")
+    context.eval("""
+      var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
+      
+      mapped;
+    """)
+  }
+  
+  result must beSome[List[Int]]
+  result.get must beEqualTo(List(3, 6, 9))
+}
 ```
 
-For more examples, look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosSpec.scala)
+For more examples, take a look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosSpec.scala)
 
