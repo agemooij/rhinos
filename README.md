@@ -16,13 +16,23 @@ Run Javascript code and act on its output from Scala.
 The use case that started this project was a __programmable fake REST server__ to support functional testing of mobile (iOS, Android) apps. It needed to run on the JVM because the _real_ REST server used heavy encryption written in Java but the behavior of the server (the _scenarios_ to run when responding to REST calls) needed to be programmed in Javascript because that was the one language all our testers knew.
 
 
+### Downloads
+No downloads yet. As soon as version 0.1 is finished, it will be uploaded to a Maven/SBT repo near you!
+
+
+### Requirements
+Rhinos is built using SBT 0.11.x and depends on:
+
+- Mozilla Rhino 1.7R3
+- Spray Json 1.1.0
+- Specs2 1.8.2 (only for running the tests of course)
+
+
 ### Roadmap
 For version 0.1, the following features are under construction:
 
-- Change return type of `context.loadFromClasspath(path: String)` to `None` so all context methods return a value
 - Add `context.runFromClasspath(path: String): Option[T]`
 - Add `context.runFromFile(path: String): Option[T]`
-- Add `context.loadFromFile(path: String): None`
 - Better Javascript error handling
 
 Rough ideas for later:

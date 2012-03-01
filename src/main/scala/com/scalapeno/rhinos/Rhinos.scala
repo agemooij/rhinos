@@ -4,7 +4,7 @@ import scala.collection.immutable.ListMap
 import scala.collection.JavaConversions._
 import scala.util.control.Exception._
 
-import java.io.{BufferedReader, InputStreamReader}
+import java.io._
 
 import org.mozilla.javascript._
 import cc.spray.json._
@@ -43,13 +43,26 @@ class RhinoContext[T : JsonReader] {
     }
   }
   
-  def loadFromClasspath(path: String) {
+  def loadFromClasspath(path: String): Option[T] = {
     val in = this.getClass.getClassLoader.getResourceAsStream(path)
     
     if (in != null) {
-      using(new BufferedReader(new InputStreamReader(in))) { reader =>
-        context.evaluateReader(scope, reader, "RhinoContext.loadFromClasspath()", 1, null)
-      }
+      load(new BufferedReader(new InputStreamReader(in)))
+    } else {
+      // TODO: log a warning
+      
+      None
+    }
+  }
+  
+  def loadFromFile(path: String): Option[T] = loadFromFile(new File(path))
+  def loadFromFile(file: File): Option[T] = {
+    if (file != null && file.exists) {
+      load(new FileReader(file))
+    } else {
+      // TODO: log a warning
+
+      None
     }
   }
   
@@ -61,6 +74,14 @@ class RhinoContext[T : JsonReader] {
   // ==========================================================================
   // Implementation Details
   // ==========================================================================
+
+  private def load(reader: Reader): Option[T] = {
+    using(reader) { r =>
+      context.evaluateReader(scope, r, "RhinoContext.loadFromClasspath()", 1, null)
+    }
+    
+    None
+  }
   
   private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
      try {

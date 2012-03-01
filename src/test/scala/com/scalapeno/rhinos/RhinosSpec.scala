@@ -9,7 +9,7 @@ import org.specs2.mutable._
 class RhinosSpec extends Specification {
   import Rhinos._
 
-  "RhinosContext[T].eval(...)" should {
+  "RhinoContext[T].eval(...)" should {
     "return None when the script is empty" in {
       val result = rhino[Int](_.eval(""""""))
       
@@ -201,12 +201,10 @@ class RhinosSpec extends Specification {
     }
   }
   
-  "RhinosContext[T].loadFromClasspath()" should {
+  "RhinoContext[T].loadFromClasspath(...)" should {
     "not throw an exception when the path doesn't exist" in {
       val result = rhino[Unit] { context =>
         context.loadFromClasspath("non-existing-path.js")
-        
-        None
       }
       
       result must beNone
@@ -237,8 +235,58 @@ class RhinosSpec extends Specification {
     }
   }
   
+  "RhinoContext[T].loadFromFile(...)" should {
+    import java.io.File
+    
+    "not throw an exception when the path doesn't exist" in {
+      val result = rhino[Unit] { context =>
+        context.loadFromFile("/tmp/non-existing-path.js")
+      }
+      
+      result must beNone
+    }
+    
+    "not throw an exception when the file doesn't exist" in {
+      val result = rhino[Unit] { context =>
+        context.loadFromFile(new File("/tmp/non-existing-path.js"))
+      }
+      
+      result must beNone
+    }
+    
+    "load functions from a file and make them available to eval()" in {
+      val url = this.getClass.getClassLoader.getResource("scripts/test-functions.js")
+      val file = new File(url.toURI)
+      
+      val result = rhino[Double] { context =>
+        context.loadFromFile(file)
+        context.eval("""var r = add2(add(10, 30)); r;""")
+      }
+      
+      result must beSome[Double]
+      result.get must beEqualTo(42.0)
+    }
+    
+    "load 3rd party JS lib from a file and make it available to eval()" in {
+      val url = this.getClass.getClassLoader.getResource("scripts/underscore.js")
+      val file = new File(url.toURI)
+      
+      val result = rhino[List[Int]] { context =>
+        context.loadFromFile(file)
+        context.eval("""
+          var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
+          
+          mapped;
+        """)
+      }
+      
+      result must beSome[List[Int]]
+      result.get must beEqualTo(List(3, 6, 9))
+    }
+  }
   
-  // "RhinosContext.eval()" should {
+  
+  // "RhinoContext.eval()" should {
   //   
   //   "return None when the script is empty" in {
   //     val result = rhino(_.eval(""""""))
