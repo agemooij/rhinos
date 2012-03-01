@@ -1,4 +1,4 @@
-Rhinos (or RhinoS) is a simple Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects, using the [Spray JSON](https://github.com/spray/spray-json) AST as an intermediate format. Spray JSON then allows you to easily convert that AST to normal Scala objects and/or instances of your own (case) classes.
+Rhinos (or RhinoS) is a tiny Scala wrapper around Mozilla's Rhino Javascript runtime for the JVM. It allows you to run Javascript code and to extract return values as native Scala objects, using the [Spray JSON](https://github.com/spray/spray-json) AST as an intermediate format. Spray JSON then allows you to easily convert that AST to normal Scala objects and/or instances of your own (case) classes.
 
 
 ### Status
