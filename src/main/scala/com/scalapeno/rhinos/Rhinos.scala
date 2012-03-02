@@ -16,7 +16,8 @@ package object rhinos {
   
   def rhino[T : JsonReader](block: RhinoContext[T] => Option[T]): Option[T] = {
     val rhinoContext = new RhinoContext[T]()
-    val result = try {
+    
+    try {
       block(rhinoContext)
     } catch {
       case jse: EvaluatorException => {
@@ -30,8 +31,6 @@ package object rhinos {
     } finally {
       rhinoContext.close
     }
-    
-    result
   }
   
   class RhinoContext[T : JsonReader] {
@@ -119,8 +118,7 @@ package object rhinos {
       case u:Undefined => JsNull
       case null => JsNull
       case other @ _ => {
-        // TODO: replace with one of the many Scala Logger abstractions!
-        println("Error: cannot convert '" + other + "' to a JsValue. Returning None.")
+        log.warn("Cannot convert '%s' to a JsValue. Returning None.".format(other))
 
         JsNull
       }
