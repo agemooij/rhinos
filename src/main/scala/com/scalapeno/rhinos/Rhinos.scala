@@ -16,6 +16,10 @@ object Rhinos {
     val result = try {
       block(rhinoContext)
     } catch {
+      case jse: EvaluatorException => {
+        println("ERROR: Could not evaluate Javascript code: " + jse.getMessage)
+        None
+      }
       case e: Exception => {
         e.printStackTrace
         None
@@ -26,107 +30,107 @@ object Rhinos {
     
     result
   }
-}
-
-class RhinoContext[T : JsonReader] {
-  val context = Context.enter()
-  val scope = context.initStandardObjects()
   
-  def eval(javascriptCode: String): Option[T] = {
-    val result = context.evaluateString(scope, javascriptCode, "RhinoContext.eval()", 1, null)
-    
-    toScala(result)
-  }
-  
-  def evalFile(path: String): Option[T] = evalFile(new File(path))
-  def evalFile(file: File): Option[T] = {
-    if (file != null && file.exists) {
-      eval(new FileReader(file))
-    } else {
-      // TODO: log a warning
+  class RhinoContext[T : JsonReader] {
+    val context = Context.enter()
+    val scope = context.initStandardObjects()
 
-      None
+    def eval(javascriptCode: String): Option[T] = {
+      val result = context.evaluateString(scope, javascriptCode, "RhinoContext.eval()", 1, null)
+
+      toScala(result)
     }
-  }
 
-  def evalFileOnClasspath(path: String): Option[T] = {
-    val in = this.getClass.getClassLoader.getResourceAsStream(path)
-    
-    if (in != null) {
-      eval(new BufferedReader(new InputStreamReader(in)))
-    } else {
-      // TODO: log a warning
-      
-      None
-    }
-  }
-  
-  def close {
-    Context.exit()
-  }
-  
-  
-  // ==========================================================================
-  // Implementation Details
-  // ==========================================================================
+    def evalFile(path: String): Option[T] = evalFile(new File(path))
+    def evalFile(file: File): Option[T] = {
+      if (file != null && file.exists) {
+        eval(new FileReader(file))
+      } else {
+        // TODO: log a warning
 
-  private def eval(reader: Reader): Option[T] = {
-    val result = using(reader) { r =>
-      context.evaluateReader(scope, r, "RhinoContext.loadFromClasspath()", 1, null)
-    }
-    
-    toScala(result)
-  }
-  
-  private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
-     try {
-       f(resource)
-     } finally {
-       resource.close()
-     }
-  }
-  
-  private def toScala(input: Any): Option[T] = {
-    toJsValueOption(input).flatMap { jsValue =>
-      catching(classOf[DeserializationException]) opt {
-        jsValue.convertTo[T]
+        None
       }
     }
-  }
-  
-  private def toJsValueOption(input: Any): Option[JsValue] = toJsValue(input) match {
-    case value if value == JsNull => None
-    case jsValue @ _ => Some(jsValue)
-  }
-  
-  private def toJsValue(input: Any): JsValue = input match {
-    case b:Boolean => JsBoolean(b)
-    case i:Int => JsNumber(i)
-    case l:Long => JsNumber(l)
-    case f:Float => JsNumber(f)
-    case d:Double => JsNumber(d)
-    case s:String => JsString(s)
-    
-    case o:NativeObject => toJsObject(o)
-    case a:NativeArray => toJsArray(a)
 
-    case u:Undefined => JsNull
-    case null => JsNull
-    case other @ _ => {
-      // TODO: replace with one of the many Scala Logger abstractions!
-      println("Error: cannot convert '" + other + "' to a JsValue. Returning None.")
-      
-      JsNull
+    def evalFileOnClasspath(path: String): Option[T] = {
+      val in = this.getClass.getClassLoader.getResourceAsStream(path)
+
+      if (in != null) {
+        eval(new BufferedReader(new InputStreamReader(in)))
+      } else {
+        // TODO: log a warning
+
+        None
+      }
     }
-  }
 
-  private def toJsObject(nativeObject: NativeObject): JsObject = {
-    val tuples = nativeObject.entrySet.toList.map(entry => (entry.getKey.toString, toJsValue(entry.getValue)))
+    def close {
+      Context.exit()
+    }
 
-    new JsObject(ListMap(tuples: _*))
-  }
 
-  private def toJsArray(nativeArray: NativeArray): JsArray = {
-    new JsArray(nativeArray.iterator().map(item => toJsValue(item)).toList)
+    // ==========================================================================
+    // Implementation Details
+    // ==========================================================================
+
+    private def eval(reader: Reader): Option[T] = {
+      val result = using(reader) { r =>
+        context.evaluateReader(scope, r, "RhinoContext.loadFromClasspath()", 1, null)
+      }
+
+      toScala(result)
+    }
+
+    private def using[X <: {def close()}, A](resource : X)(f : X => A) = {
+       try {
+         f(resource)
+       } finally {
+         resource.close()
+       }
+    }
+
+    private def toScala(input: Any): Option[T] = {
+      toJsValueOption(input).flatMap { jsValue =>
+        catching(classOf[DeserializationException]) opt {
+          jsValue.convertTo[T]
+        }
+      }
+    }
+
+    private def toJsValueOption(input: Any): Option[JsValue] = toJsValue(input) match {
+      case value if value == JsNull => None
+      case jsValue @ _ => Some(jsValue)
+    }
+
+    private def toJsValue(input: Any): JsValue = input match {
+      case b:Boolean => JsBoolean(b)
+      case i:Int => JsNumber(i)
+      case l:Long => JsNumber(l)
+      case f:Float => JsNumber(f)
+      case d:Double => JsNumber(d)
+      case s:String => JsString(s)
+
+      case o:NativeObject => toJsObject(o)
+      case a:NativeArray => toJsArray(a)
+
+      case u:Undefined => JsNull
+      case null => JsNull
+      case other @ _ => {
+        // TODO: replace with one of the many Scala Logger abstractions!
+        println("Error: cannot convert '" + other + "' to a JsValue. Returning None.")
+
+        JsNull
+      }
+    }
+
+    private def toJsObject(nativeObject: NativeObject): JsObject = {
+      val tuples = nativeObject.entrySet.toList.map(entry => (entry.getKey.toString, toJsValue(entry.getValue)))
+
+      new JsObject(ListMap(tuples: _*))
+    }
+
+    private def toJsArray(nativeArray: NativeArray): JsArray = {
+      new JsArray(nativeArray.iterator().map(item => toJsValue(item)).toList)
+    }
   }
 }

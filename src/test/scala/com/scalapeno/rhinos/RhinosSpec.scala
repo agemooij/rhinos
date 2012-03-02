@@ -16,6 +16,12 @@ class RhinosSpec extends Specification {
       result must beNone
     }
     
+    "return None when the script is not valid" in {
+      val result = rhino[Double](_.eval("""var x = bla bla bla"""))
+      
+      result must beNone
+    }
+    
     "return None when the script does not return a result" in {
       val result = rhino[Double](_.eval("""var x = 42;"""))
       
