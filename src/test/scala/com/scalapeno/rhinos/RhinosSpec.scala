@@ -7,7 +7,6 @@ import org.specs2.mutable._
 
 
 class RhinosSpec extends Specification {
-  import Rhinos._
 
   "RhinoContext[T].eval(...)" should {
     "return None when the script is empty" in {

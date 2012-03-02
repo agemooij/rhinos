@@ -1,4 +1,4 @@
-package com.scalapeno.rhinos
+package com.scalapeno
 
 import scala.collection.immutable.ListMap
 import scala.collection.JavaConversions._
@@ -11,7 +11,7 @@ import org.mozilla.javascript._
 import cc.spray.json._
 
 
-object Rhinos {
+package object rhinos {
   val log = LoggerFactory.getLogger(this.getClass)
   
   def rhino[T : JsonReader](block: RhinoContext[T] => Option[T]): Option[T] = {
