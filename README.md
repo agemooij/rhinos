@@ -4,8 +4,9 @@ Internally it uses [Spray Json](https://github.com/spray/spray-json) and its exc
 
 
 ### Status
-__WARNING:__ Work in progress!    
-This project is a few days old and still actively under construction. It has not been used in production.... yet.
+This project is brand new and hasn't been tested in production yet.
+
+Version 0.1 is out now and contains more than 90% of all features I can currently imagine.
 
 All comments, suggestions, feature requests, pull requests, etc. and very welcome.
 
@@ -17,23 +18,22 @@ The use case that started this project was a __programmable fake REST server__ t
 
 
 ### Downloads
-No downloads yet. As soon as version 0.1 is finished, it will be uploaded to a Maven/SBT repo near you!
+No downloads yet. Version 0.1 will be uploaded to a Maven/SBT repo near you ASAP!
 
 
 ### Requirements
 Rhinos is built using SBT 0.11.x and depends on:
 
-- Mozilla Rhino 1.7R3
-- Spray Json 1.1.0
-- Specs2 1.8.2 (only for running the tests of course)
+- org.mozilla.rhino 1.7R3
+- spray-json 1.1.0
+- slf4j-api 1.6.4
+- specs2 1.8.2 (only for running the tests of course)
+
+You will have to provide your own SLF4J implementation, even though everybody knows you should use Logback :)
 
 
 ### Roadmap
-For version 0.1, the following features are still under construction:
-
-- Better Javascript error handling
-
-Rough ideas for later:
+Rough ideas for 0.2 and later:
 
 - add support for injecting values into the Rhino context
 
