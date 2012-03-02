@@ -6,22 +6,25 @@ import scala.util.control.Exception._
 
 import java.io._
 
+import org.slf4j.LoggerFactory
 import org.mozilla.javascript._
 import cc.spray.json._
 
 
 object Rhinos {
+  val log = LoggerFactory.getLogger(this.getClass)
+  
   def rhino[T : JsonReader](block: RhinoContext[T] => Option[T]): Option[T] = {
     val rhinoContext = new RhinoContext[T]()
     val result = try {
       block(rhinoContext)
     } catch {
       case jse: EvaluatorException => {
-        println("ERROR: Could not evaluate Javascript code: " + jse.getMessage)
+        log.error("Could not evaluate Javascript code: " + jse.getMessage)
         None
       }
       case e: Exception => {
-        e.printStackTrace
+        log.error("Rhinos ran into a problem while evaluating Javascript.", e)
         None
       }
     } finally {
@@ -46,7 +49,7 @@ object Rhinos {
       if (file != null && file.exists) {
         eval(new FileReader(file))
       } else {
-        // TODO: log a warning
+        log.warn("Could not evaluate Javascript file %s because it does not exist.".format(file))
 
         None
       }
@@ -58,7 +61,7 @@ object Rhinos {
       if (in != null) {
         eval(new BufferedReader(new InputStreamReader(in)))
       } else {
-        // TODO: log a warning
+        log.warn("Could not evaluate Javascript file %s because it does not exist on the classpath.".format(path))
 
         None
       }
