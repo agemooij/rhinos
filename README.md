@@ -31,7 +31,7 @@ Rough ideas for 0.3 and later:
 
 
 ### Downloads
-No downloads yet, working on it!
+You can download version the latest version from the downloads section of the GitHub page hosting this README. As soon as things stabilize a bit (around version 0.3/0.4) I'll start the process of getting Rhinos into the SBT/Maven repo system.
 
 
 ## Getting started
@@ -49,7 +49,7 @@ You will have to provide your own SLF4J implementation, even though everybody kn
 
 
 ### Building Rhinos
-As long as Rhinos has not been uploaded to an SBT/Maven repository, you'll have to build it yourself using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x. Just run the following command:
+As long as Rhinos has not been uploaded to an SBT/Maven repository, you'll have to download the jar or just build it yourself using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x. Just clone the Git repository and run the following command:
 
     sbt test publish-local
 
