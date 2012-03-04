@@ -99,9 +99,13 @@ You can also load or run existing libraries and then use them in subsequent call
 
 For more examples, take a look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosSpec.scala)
 
+### License
 <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">
     <img alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by/3.0/88x31.png" />
 </a>
 <br />
 This work is licensed under a 
 <a rel="license" href="http://creativecommons.org/licenses/by/3.0/">Creative Commons Attribution 3.0 Unported License</a>.
+
+### Acknowledgements
+Versions 0.1 and 0.2 of Rhinos were written on top of a mountain in Austria. Many thanks to Georg Ribitsch for making this possible by letting me borrow his Austrian 3G dongle so I could download some dependencies and lookup some documentation once in a while.
