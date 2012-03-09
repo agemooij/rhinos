@@ -136,6 +136,13 @@ class RhinosSpec extends Specification {
       
       result must beNone
     }
+        
+    "return Some[JsArray] when T = JsArray and the script returns a Javascript array" in {
+      val result = rhino[JsArray](_.eval("""var a = [1,2,3]; a;"""))
+      
+      result must beSome[JsArray]
+      result.get must beEqualTo(JsArray(JsNumber(1), JsNumber(2), JsNumber(3)))
+    }
     
     "return Some[Map[String, Int]] when T = Map[String, Int] and the script returns a compatible Javascript object" in {
       val result = rhino[Map[String, Int]](_.eval("""var o = {"name1": 40, "name2": 2}; o;"""))
@@ -144,7 +151,14 @@ class RhinosSpec extends Specification {
       result.get must beEqualTo(Map("name1" -> 40, "name2" -> 2))
     }
     
-    "return Some(CustomObject) when T = CustomObject and the script returns a Javascript object" in {
+    "return Some[JsObject] when T = JsObject and the script returns a Javascript object" in {
+      val result = rhino[JsObject](_.eval("""var o = {"name1": 40, "name2": "2"}; o;"""))
+      
+      result must beSome[JsObject]
+      result.get must beEqualTo(JsObject("name1" -> JsNumber(40), "name2" -> JsString("2")))
+    }
+    
+    "return Some(CustomObject) when T = CustomObject and the script returns a compatible Javascript object" in {
       case class CustomObject(name1: String, name2:Boolean)
       implicit val customObjectFormat = jsonFormat2(CustomObject)
       
@@ -152,6 +166,35 @@ class RhinosSpec extends Specification {
       
       result must beSome[CustomObject]
       result.get must beEqualTo(CustomObject("value", true))
+    }
+    
+    "return Some[List[CustomObject]] when T = List[CustomObject] and the script returns a Javascript array of compatible objects" in {
+      case class CustomObject(name1: String, name2:Boolean)
+      implicit val customObjectFormat = jsonFormat2(CustomObject)
+      
+      val result = rhino[List[CustomObject]](_.eval("""
+        var a = [{"name1": "value1", "name2": true}, 
+                 {"name1": "value2", "name2": false}];
+        a;
+      """))
+      
+      result must beSome[List[CustomObject]]
+      result.get must beEqualTo(List(CustomObject("value1", true), CustomObject("value2", false)))
+    }
+    
+    "return Some[JsArray[JsObject]] when T = JsArray and the script returns a Javascript array of objects" in {
+      val result = rhino[JsArray](_.eval("""
+        var a = [{"name1": "value1", "name2": true}, 
+                 {"name1": "value2", "name2": false}];
+        a;
+      """))
+      
+      result must beSome[JsArray]
+      result.get must beEqualTo(
+        JsArray(
+          JsObject("name1" -> JsString("value1"), "name2" -> JsBoolean(true)),
+          JsObject("name1" -> JsString("value2"), "name2" -> JsBoolean(false))
+        ))
     }
     
     "return Some(CompoundObject) when T = CompoundObject and the script returns a Javascript object with nested objects" in {

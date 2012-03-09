@@ -70,7 +70,6 @@ package object rhinos {
       Context.exit()
     }
 
-
     // ==========================================================================
     // Implementation Details
     // ==========================================================================
@@ -132,6 +131,20 @@ package object rhinos {
 
     private def toJsArray(nativeArray: NativeArray): JsArray = {
       new JsArray(nativeArray.iterator().map(item => toJsValue(item)).toList)
+    }
+  }
+  
+  implicit object JsObjectReader extends JsonReader[JsObject] {
+    def read(value: JsValue) = value match {
+      case o: JsObject => o
+      case x => deserializationError("Expected JsObject, but got " + x)
+    }
+  }
+  
+  implicit object JsArrayReader extends JsonReader[JsArray] {
+    def read(value: JsValue) = value match {
+      case o: JsArray => o
+      case x => deserializationError("Expected JsArray, but got " + x)
     }
   }
 }
