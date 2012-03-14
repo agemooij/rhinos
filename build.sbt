@@ -6,6 +6,8 @@ organization := "com.scalapeno"
 
 scalaVersion := "2.9.1"
 
+scalacOptions := Seq("-deprecation", "-encoding", "utf8")
+
 resolvers ++= Seq(
   "spray repo" at "http://repo.spray.cc"
 )
