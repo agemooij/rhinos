@@ -76,7 +76,7 @@ package object rhinos {
 
     private def eval(reader: Reader): Option[T] = {
       val result = using(reader) { r =>
-        context.evaluateReader(scope, r, "RhinoContext.loadFromClasspath()", 1, null)
+        context.evaluateReader(scope, r, "RhinoContext.eval(Reader)", 1, null)
       }
 
       toScala(result)
