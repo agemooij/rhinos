@@ -22,8 +22,8 @@ Rough ideas for 0.3 and later:
 
 - ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) re-enable direct access to the underlying Spray Json AST for apps that just need to output Json produced by Javascript, like REST web services. Basically make it possible for T in rhino[T] to be the unconverted JsObject or JsArray
 - add support for calling Javascript functions, passing in native Scala arguments (using spray-json formatters)
-- add support for creating a global scope outside of the current rhino[T] block so a pre-loaded (sealed) scope can be reused
-- make the typing of rhino[T] more flexible so not all calls within the block have to produce a T
+- ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) add support for creating a global scope outside of the current rhino[T] block so a pre-loaded (sealed) scope can be reused
+- ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) make the typing of rhino[T] more flexible so not all calls within the block have to produce a T
 - add support for injecting values (global variables) into the Rhino scope
 - add solid docs to the wiki
 - put the scaladocs online

@@ -14,7 +14,15 @@ trait RhinosEvaluationSupport { self: RhinosJsonSupport =>
   
   def eval[T : JsonReader](javascriptCode: String): Option[T] = {
     withContext[Any] { context =>
-      context.evaluateString(scope, javascriptCode, "RhinoContext.eval()", 1, null)
+      context.evaluateString(scope, javascriptCode, "RhinoContext.eval(String)", 1, null)
+    }.flatMap(value => toScala[T](value))
+  }
+  
+  def evalReader[T : JsonReader](reader: Reader): Option[T] = {
+    using(reader) { r =>
+      withContext[Any] { context =>
+        context.evaluateReader(scope, r, "RhinoContext.eval(Reader)", 1, null)
+      }
     }.flatMap(value => toScala[T](value))
   }
   
@@ -44,14 +52,6 @@ trait RhinosEvaluationSupport { self: RhinosJsonSupport =>
   // ==========================================================================
   // Implementation Details
   // ==========================================================================
-
-  private[rhinos] def evalReader[T : JsonReader](reader: Reader): Option[T] = {
-    using(reader) { r =>
-      withContext[Any] { context =>
-        context.evaluateReader(scope, r, "RhinoContext.eval(Reader)", 1, null)
-      }
-    }.flatMap(value => toScala[T](value))
-  }
   
   private[rhinos] def using[X <: {def close()}, A](resource : X)(f : X => A) = {
      try {

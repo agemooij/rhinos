@@ -14,8 +14,6 @@ import cc.spray.json._
 package object rhinos {
   val log = LoggerFactory.getLogger(this.getClass)
   
-
-  
   
   class RhinosScope(val wrapped: ScriptableObject) {
     
