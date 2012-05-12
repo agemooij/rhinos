@@ -12,57 +12,61 @@ The use case that started this project was a __programmable fake REST server__ t
 ### Status
 This project is brand new and hasn't been tested in production yet.
 
-Version 0.2 is out now and work is already underway on version 0.3. See the feature roadmap below for where it's all going.
+Version 0.3.0 is out now and work is already underway on version 0.4. See the feature roadmap below for where it's all going.
 
 All comments, suggestions, feature requests, pull requests, etc. and very welcome.
 
 
 ### Feature Roadmap
-Rough ideas for 0.3 and later:
+Rough ideas for the future:
 
 - ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) re-enable direct access to the underlying Spray Json AST for apps that just need to output Json produced by Javascript, like REST web services. Basically make it possible for T in rhino[T] to be the unconverted JsObject or JsArray
 - add support for calling Javascript functions, passing in native Scala arguments (using spray-json formatters)
 - ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) add support for creating a global scope outside of the current rhino[T] block so a pre-loaded (sealed) scope can be reused
 - ![Done](https://github.com/agemooij/rhinos/raw/master/project/images/accept.png) make the typing of rhino[T] more flexible so not all calls within the block have to produce a T
 - add support for injecting values (global variables) into the Rhino scope
+- add support for CommonJS modules
 - add solid docs to the wiki
 - put the scaladocs online
 - Release artifacts into the SBT/Maven repo system
-
-
-### Downloads
-You can download version the latest version from the downloads section of the GitHub page hosting this README. As soon as things stabilize a bit (around version 0.3/0.4) I'll start the process of getting Rhinos into the SBT/Maven repo system.
 
 
 ## Getting started
 Things are still a bit chaotic but if you want to start playing with Rhinos, here how:
 
 ### Requirements
-Rhinos is written in Scala (2.9.1), built using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x, and it depends on:
+Rhinos is written in Scala (2.9.1/2.9.2), built using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x, and it depends on:
 
 - [org.mozilla.rhino](http://www.mozilla.org/rhino/) 1.7R3
-- [spray-json](https://github.com/spray/spray-json) 1.1.0
+- [spray-json](https://github.com/spray/spray-json) 1.1.1
 - [slf4j-api](http://www.slf4j.org/) 1.6.4
-- [specs2](http://etorreborre.github.com/specs2/) 1.8.2 (only for testing)
+- [specs2](http://etorreborre.github.com/specs2/) 1.9 (only for testing)
 
-You will have to provide your own SLF4J implementation, even though everybody knows you should use [Logback](http://logback.qos.ch/) :)
+I haven't hardcoded a dependency on a specific SLF4J implementation so you can choose your own, even though everybody knows you should use [Logback](http://logback.qos.ch/) :)
 
+
+### Downloading Rhinos
+As long as Rhinos has not been uploaded to an SBT/Maven repository, you'll have to download the archive, which includes all published artefacts for both Scala 2.9.1 and 2.9.2. 
+Just extract it into your local SBT (~/.ivy2/local) or Maven (~/.m2/repository) repository.
 
 ### Building Rhinos
-As long as Rhinos has not been uploaded to an SBT/Maven repository, you'll have to download the jar or just build it yourself using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x. Just clone the Git repository and run the following command:
+Or just build it yourself using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.3. Just clone the Git repository and run the following command:
 
     sbt test publish-local
 
-This puts the current version of Rhinos in your local SBT repository, for version 0.2.0 this would be in `~/.ivy2/local/com.scalapeno/rhinos_2.9.1/0.2.0/`
+This puts the current version of Rhinos in your local SBT repository, for version 0.3.0 this would be in `~/.ivy2/local/com.scalapeno/rhinos_2.9.2/0.3.0/`
+If you need a version for Scala 2.9.1, you can run a cross build using:
+
+    sbt test + publish-local
 
 
 ### SBT Project Configuration
-Just add the following two lines to your list of dependencies:
+Add the following two lines to your list of dependencies:
 
 ```scala
 libraryDependencies ++= Seq(
   ...
-  "com.scalapeno" %% "rhinos" % "0.2.0",
+  "com.scalapeno" %% "rhinos" % "0.3.0",
   "ch.qos.logback" % "logback-classic" % "1.0.0",
   ...
 )
@@ -73,25 +77,25 @@ libraryDependencies ++= Seq(
 To give you an idea of how Rhinos works, here's a snippet from one of the unit tests:
 
 ```scala
-"return Some[Int] when T =:= Int and the script returns a Javascript number" in {
-  val result = rhino[Int](_.eval("""var n = 3; n;"""))
+"return Some[Int] when T = Int and the script returns a Javascript number" in {
+  val result = rhinos.eval[Int]("""var n = 3; n;""")
 
   result must beSome[Int]
   result.get must beEqualTo(3)
 }
 
-"return Some[String] when T =:= String and the script returns a Javascript string" in {
-  val result = rhino[String](_.eval("""var s = "some string!"; s;"""))
+"return Some[String] when T = String and the script returns a Javascript string" in {
+  val result = rhinos.eval[String]("""var s = "some string!"; s;""")
   
   result must beSome[String]
   result.get must beEqualTo("some string!")
 }
 
-"return Some(CustomObject) when T =:= CustomObject and the script returns a Javascript object" in {
+"return Some(CustomObject) when T = CustomObject and the script returns a compatible Javascript object" in {
   case class CustomObject(name1: String, name2:Boolean)
   implicit val customObjectFormat = jsonFormat2(CustomObject)
   
-  val result = rhino[CustomObject](_.eval("""var o = {"name1": "value", "name2": true}; o;"""))
+  val result = rhinos.eval[CustomObject]("""var o = {"name1": "value", "name2": true}; o;""")
   
   result must beSome[CustomObject]
   result.get must beEqualTo(CustomObject("value", true))
@@ -102,33 +106,36 @@ You can also load or run existing libraries and then use them in subsequent call
 
 ```scala
 "eval the file and return the converted return value" in {
-  val result = rhino[Int] { context =>
-    context.evalFileOnClasspath("scripts/script-with-return-value.js")
-  }
+  val result = rhinos.evalFileOnClasspath[Int]("scripts/script-with-return-value.js")
   
   result must beSome[Int]
   result.get must beEqualTo(42)
 }
 
-"eval 3rd party JS lib from a file and make it available to later calls to eval()" in {
-  val url = this.getClass.getClassLoader.getResource("scripts/underscore.js")
-  val file = new File(url.toURI)
+"eval functions from a file and make them available to later calls to eval()" in {
+  rhinos.evalFileOnClasspath[Unit]("scripts/test-functions.js")
   
-  val result = rhino[List[Int]] { context =>
-    context.evalFile(file)
-    context.eval("""
-      var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
-      
-      mapped;
-    """)
-  }
+  val result = rhinos.eval[Double]("""var r = add2(add(10, 30)); r;""")
+  
+  result must beSome[Double]
+  result.get must beEqualTo(42.0)
+}
+
+"eval 3rd party JS lib from a file and make it available to later calls to eval()" in {
+  rhinos.evalFileOnClasspath[Unit]("scripts/underscore.js")
+  
+  val result = rhinos.eval[List[Int]]("""
+    var mapped = _.map([1, 2, 3], function(num) { return num * 3; });
+    
+    mapped;
+  """)
   
   result must beSome[List[Int]]
   result.get must beEqualTo(List(3, 6, 9))
 }
 ```
 
-For more examples, take a look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosSpec.scala)
+For more examples, take a look at the [unit tests](https://github.com/agemooij/rhinos/blob/master/src/test/scala/com/scalapeno/rhinos/RhinosRuntimeSpec.scala)
 
 
 ## License
