@@ -34,28 +34,36 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
           var y = 'bar' + x;
           y;
         """)
-      result must beEqualTo(Some("barbar"))
       there was mockCallback.callback(1,"foo")
+      result must beEqualTo(Some("barbar"))
 
     }
 
-//    "Allow to call arbitraty things" in {
-//         val mockCallback = mock[SimpleCallback]
+    "Allow to call arbitraty things" in {
+         val mockCallback = mock[ComplexCallback]
+
+         //Stubbed call.  Don't know if the values need to match up here  or below when we assert
+         mockCallback.complexCallback(any[CustomObject])  returns CustomObject("bar", true)
+         rhinos.addObject("complexobj", mockCallback)
+         val result = rhinos.eval[CustomObject](
+           """
+              var o = {"name": "foo", "used" : false }
+
+
+              var x = complexobj.complexCallback(o);
+           """)
+
+         there was mockCallback.complexCallback(CustomObject("foo", false))
+         result must beEqualTo(Some(CustomObject("bar", true)))
+
+       }
+
 //
-//         //Stubbed call.  Don't know if the values need to match up here  or below when we assert
-//         mockCallback.complexCallBack(any[CustomObject])  returns "bar"
-//         rhinos.addObject("testobj", mockCallback)
-//         val result = rhinos.eval[String](
-//           """
-//             var x = testobj.callBackComplex("foo", true);
-//             var y = 'bar' + x;
-//             y;
-//           """)
-//
-//         there was one(mockCallback.complexCallBack(CustomObject("foo", true)))
-//
-//       }
+//    "Substitute a function " in {
+//      failure("Not yet implented")
+//    }
   }
+
 
 
   trait SimpleCallback {
@@ -63,7 +71,11 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
    // def complexCallBack(obj:CustomObject) : String
   }
 
-  case class CustomObject(name1: String, name2:Boolean)
+  trait ComplexCallback {
+    def complexCallback(obj:CustomObject) : CustomObject
+  }
+
+  case class CustomObject(name1: String, used:Boolean)
   implicit val customObjectFormat = jsonFormat2(CustomObject)
 
 }
