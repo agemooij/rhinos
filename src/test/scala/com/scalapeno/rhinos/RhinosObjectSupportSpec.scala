@@ -6,7 +6,7 @@ import cc.spray.json._
 import cc.spray.json.DefaultJsonProtocol._
 
 
-class RhinosObjectSupportSpec extends Specification {
+class RhinosObjectSupportSpec extends SpecificationWithJUnit {
   
   trait RhinosObjectSupport { self: RhinosJsonSupport =>
     val scope: RhinosScope
