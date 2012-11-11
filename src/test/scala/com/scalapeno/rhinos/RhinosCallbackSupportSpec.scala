@@ -19,7 +19,18 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
 
     step {
       rhinos = new RhinosRuntime()
+
+      //Seems kind of hacky, but it's pretty useful to be able to debug from within the context of the
+      //java script.
+      //The actual print command suggestion came from http://community.jedit.org/?q=node/view/3849
+      rhinos.eval[String](
+            """
+              function print(message) {
+                    java.lang.System.out.println(message);
+              }
+            """)
     }
+
 
 
     "Allow for simple callbacks" in {
@@ -31,6 +42,7 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
       val result = rhinos.eval[String](
         """
           var x = testobj.callback(1, "foo");
+          print("Got back:" + x);
           var y = 'bar' + x;
           y;
         """)
@@ -48,9 +60,9 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
          val result = rhinos.eval[CustomObject](
            """
               var o = {"name": "foo", "used" : false }
-
-
               var x = complexobj.complexCallback(o);
+              print('got back:' + x);
+              x;
            """)
 
          there was mockCallback.complexCallback(CustomObject("foo", false))
