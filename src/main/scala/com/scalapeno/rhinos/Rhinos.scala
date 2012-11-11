@@ -13,23 +13,35 @@ import cc.spray.json._
 
 package object rhinos {
   val log = LoggerFactory.getLogger(this.getClass)
-  
-  
+
+
   class RhinosScope(val wrapped: ScriptableObject) {
-    
+
   }
-  
+
   implicit def scopeToRhinosScope(scope: ScriptableObject): RhinosScope = new RhinosScope(scope)
   implicit def rhinosScopeToScope(rhinosScope: RhinosScope): ScriptableObject = rhinosScope.wrapped
-  
-  
+
+
   class RhinosRuntime (
     val scope: RhinosScope = withContext[RhinosScope] (_.initStandardObjects()).get
   ) extends RhinosEvaluationSupport with RhinosJsonSupport {
 
+    /**
+      * Makes an object available to javascript so that it can be called off to
+        * @param name
+        * @param callbackObj
+        */
+       def addObject(name: String, callbackObj: Any)  {
+        withContext { context =>
+          val jsobj = Context.javaToJS(callbackObj, scope)
+          scope.put(name, scope.wrapped,jsobj)
+        }
+       }
+
   }
 
-  
+
   private[rhinos] def withContext[T](block: Context => T): Option[T] = {
     val context = Context.enter()
 
@@ -48,14 +60,14 @@ package object rhinos {
       Context.exit()
     }
   }
-  
+
   implicit object JsObjectReader extends JsonReader[JsObject] {
     def read(value: JsValue) = value match {
       case o: JsObject => o
       case x => deserializationError("Expected JsObject, but got " + x)
     }
   }
-  
+
   implicit object JsArrayReader extends JsonReader[JsArray] {
     def read(value: JsValue) = value match {
       case o: JsArray => o
