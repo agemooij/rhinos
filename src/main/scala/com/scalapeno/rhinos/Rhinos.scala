@@ -20,24 +20,44 @@ package object rhinos {
   }
 
   implicit def scopeToRhinosScope(scope: ScriptableObject): RhinosScope = new RhinosScope(scope)
+
   implicit def rhinosScopeToScope(rhinosScope: RhinosScope): ScriptableObject = rhinosScope.wrapped
 
 
-  class RhinosRuntime (
-    val scope: RhinosScope = withContext[RhinosScope] (_.initStandardObjects()).get
-  ) extends RhinosEvaluationSupport with RhinosJsonSupport {
+  class RhinosRuntime(
+                       val scope: RhinosScope = withContext[RhinosScope](_.initStandardObjects()).get
+                       ) extends RhinosEvaluationSupport with RhinosJsonSupport {
 
     /**
-      * Makes an object available to javascript so that it can be called off to
-        * @param name
-        * @param callbackObj
-        */
-       def addObject(name: String, callbackObj: Any)  {
-        withContext { context =>
+     * Makes an object available to javascript so that it can be called off to
+     * @param name
+     * @param callbackObj
+     */
+    def addObject(name: String, callbackObj: Any) {
+      withContext {
+        context =>
           val jsobj = Context.javaToJS(callbackObj, scope)
-          scope.put(name, scope.wrapped,jsobj)
-        }
-       }
+          scope.put(name, scope.wrapped, jsobj)
+
+
+      }
+    }
+
+//    def addTransformer[T:JsonReader] {
+//      withContext {
+//        context =>
+//          context.setWrapFactory(new JsWrapFactory[T])
+//      }
+//    }
+
+
+
+    class JsWrapFactory[T:JsonReader] extends WrapFactory with RhinosJsonSupport {
+      override def wrap(cx: Context, scope: Scriptable, obj: Any, staticType: Class[_]) = {
+        println("trying to wrap up:" + obj)
+        Context.javaToJS(toScala[T](obj),scope)
+      }
+    }
 
   }
 
@@ -74,4 +94,5 @@ package object rhinos {
       case x => deserializationError("Expected JsArray, but got " + x)
     }
   }
+
 }

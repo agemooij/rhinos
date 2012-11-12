@@ -1,6 +1,7 @@
 package com.scalapeno.rhinos
 
 import org.specs2.mutable.SpecificationWithJUnit
+import org.mozilla.javascript.NativeObject
 
 /**
  * @author <a href="mailto:jmahowald@angel.com">Josh Mahowald</a> 
@@ -29,6 +30,9 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
                     java.lang.System.out.println(message);
               }
             """)
+
+
+
     }
 
 
@@ -52,10 +56,8 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
     }
 
     "Allow to call arbitraty things" in {
-         val mockCallback = mock[ComplexCallback]
-
-         //Stubbed call.  Don't know if the values need to match up here  or below when we assert
-         mockCallback.complexCallback(any[CustomObject])  returns CustomObject("bar", true)
+      val callback = new ComplexCallback
+      val mockCallback = spy(callback)
          rhinos.addObject("complexobj", mockCallback)
          val result = rhinos.eval[CustomObject](
            """
@@ -65,8 +67,8 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
               x;
            """)
 
-         there was mockCallback.complexCallback(CustomObject("foo", false))
-         result must beEqualTo(Some(CustomObject("bar", true)))
+         there was one(mockCallback).complexCallback(CustomObject("foo", false))
+         result must beEqualTo(Some(CustomObject("foofoo", false)))
 
        }
 
@@ -80,14 +82,21 @@ class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
 
   trait SimpleCallback {
     def callback(i:Int, s:String) : String
-   // def complexCallBack(obj:CustomObject) : String
   }
 
-  trait ComplexCallback {
-    def complexCallback(obj:CustomObject) : CustomObject
+  class ComplexCallback extends RhinosJsonSupport {
+    def complexCallback(obj:CustomObject) = CustomObject(obj.name + obj.name, obj.used)
+    def complexCallback(obj:NativeObject):CustomObject = {
+      val convert = toScala[CustomObject](obj)
+      convert match {
+        case Some(cust) =>complexCallback(cust)
+        case None =>  deserializationError("Expected object not returned")
+      }
+    }
   }
 
-  case class CustomObject(name1: String, used:Boolean)
+  case class CustomObject(name: String, used:Boolean)
+
   implicit val customObjectFormat = jsonFormat2(CustomObject)
 
 }
