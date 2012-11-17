@@ -19,5 +19,7 @@ libraryDependencies ++= Seq(
   "org.mozilla"    %  "rhino"            % "1.7R3",
   "org.slf4j"      %  "slf4j-api"        % "1.6.4",
   "ch.qos.logback" %  "logback-classic"  % "1.0.0"   % "provided",
-  "org.specs2"     %% "specs2"           % "1.9"     % "test"
+  "org.specs2"     %% "specs2"           % "1.9"     % "test",
+  "junit"          % "junit"             % "4.8.2"     % "test",
+  "org.mockito"    % "mockito-all"       % "1.9.0"     % "test"
 )

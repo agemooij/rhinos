@@ -6,7 +6,7 @@ import cc.spray.json._
 import cc.spray.json.DefaultJsonProtocol._
 
 
-class RhinosFunctionSupportSpec extends Specification {
+class RhinosFunctionSupportSpec extends SpecificationWithJUnit {
   
   "RhinosFunctionSupport.callFunction[T](...)" should {
     var rhinos: RhinosRuntime = null
