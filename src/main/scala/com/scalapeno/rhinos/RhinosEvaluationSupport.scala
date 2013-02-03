@@ -6,7 +6,7 @@ import java.io._
 
 import org.slf4j.LoggerFactory
 import org.mozilla.javascript._
-import cc.spray.json._
+import spray.json._
 
 
 trait RhinosEvaluationSupport { self: RhinosJsonSupport =>
@@ -26,10 +26,10 @@ trait RhinosEvaluationSupport { self: RhinosJsonSupport =>
     }.flatMap(value => toScala[T](value))
   }
   
-  def evalFile[T : JsonReader](path: String): Option[T] = evalFile(new File(path))
+  def evalFile[T : JsonReader](path: String): Option[T] = evalFile(new File(path))(implicitly[JsonReader[T]])
   def evalFile[T : JsonReader](file: File): Option[T] = {
     if (file != null && file.exists) {
-      evalReader(new FileReader(file))
+      evalReader(new FileReader(file))(implicitly[JsonReader[T]])
     } else {
       log.warn("Could not evaluate Javascript file %s because it does not exist.".format(file))
 
@@ -41,7 +41,7 @@ trait RhinosEvaluationSupport { self: RhinosJsonSupport =>
     val in = this.getClass.getClassLoader.getResourceAsStream(path)
 
     if (in != null) {
-      evalReader(new BufferedReader(new InputStreamReader(in)))
+      evalReader(new BufferedReader(new InputStreamReader(in)))(implicitly[JsonReader[T]])
     } else {
       log.warn("Could not evaluate Javascript file %s because it does not exist on the classpath.".format(path))
 

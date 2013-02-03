@@ -8,7 +8,7 @@ import java.io._
 
 import org.slf4j.LoggerFactory
 import org.mozilla.javascript._
-import cc.spray.json._
+import spray.json._
 
 
 package object rhinos {

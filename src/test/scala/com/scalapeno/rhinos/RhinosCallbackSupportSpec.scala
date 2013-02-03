@@ -11,8 +11,8 @@ import org.mozilla.javascript.NativeObject
 import org.specs2.mock.Mockito
 import org.mockito.Matchers._  // to use matchers like anyInt()
 
-import cc.spray.json._
-import cc.spray.json.DefaultJsonProtocol._
+import spray.json._
+import spray.json.DefaultJsonProtocol._
 
 class RhinosCallbackSupportSpec extends SpecificationWithJUnit with Mockito {
   "RhinosRuntime.eval[T](...)" should {

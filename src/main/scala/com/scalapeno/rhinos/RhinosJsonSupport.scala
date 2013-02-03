@@ -1,7 +1,7 @@
 package com.scalapeno.rhinos
 
 import org.mozilla.javascript._
-import cc.spray.json._
+import spray.json._
 
 import scala.collection.immutable.ListMap
 import scala.collection.JavaConversions._
