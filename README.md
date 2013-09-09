@@ -37,7 +37,7 @@ Things are still a bit chaotic but if you want to start playing with Rhinos, her
 ### Requirements
 Rhinos is written in Scala (2.9.1/2.9.2), built using [SBT](https://github.com/harrah/xsbt/wiki) 0.11.x, and it depends on:
 
-- [org.mozilla.rhino](http://www.mozilla.org/rhino/) 1.7R3
+- [org.mozilla.rhino](http://www.mozilla.org/rhino/) 1.7R4
 - [spray-json](https://github.com/spray/spray-json) 1.1.1
 - [slf4j-api](http://www.slf4j.org/) 1.6.4
 - [specs2](http://etorreborre.github.com/specs2/) 1.9 (only for testing)
